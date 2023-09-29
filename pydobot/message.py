@@ -1,4 +1,7 @@
-from .enums import PTPMode, CommunicationProtocolIDs, ControlValues
+from .enums.ptpMode import PTPMode
+from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
+from .enums.ControlValues import ControlValues
+
 
 class Message:
     def __init__(self, b=None):

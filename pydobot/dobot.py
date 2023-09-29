@@ -6,7 +6,14 @@ import warnings
 import math
 
 from .message import Message
-from .enums import ControlValues, PTPMode, CommunicationProtocolIDs
+from .enums.ptpMode import PTPMode
+from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
+from .enums.ControlValues import ControlValues
+
+PORT_GP1 = 0x00
+PORT_GP2 = 0x01
+PORT_GP4 = 0x02
+PORT_GP5 = 0x03
 
 class Dobot:
 
@@ -249,12 +256,13 @@ class Dobot:
         return self._send_command(msg)
 
     """
-        Stop command
+        Wait command
     """
-    def _set_queued_cmd_stop_exec(self):
+    def _set_wait_cmd(self, ms):
         msg = Message()
-        msg.id = CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC
-        msg.ctrl = ControlValues.ONE
+        msg.id = 110
+        msg.ctrl = 0x03
+        msg.params = bytearray(struct.pack('I', ms))
         return self._send_command(msg)
 
     """
@@ -265,6 +273,49 @@ class Dobot:
         msg.id = CommunicationProtocolIDs.SET_HOME_CMD
         msg.ctrl = ControlValues.THREE
         return self._send_command(msg, wait=True)
+    """
+        Stop command
+    """
+    def _set_queued_cmd_stop_exec(self):
+        msg = Message()
+        msg.id = CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC
+        msg.ctrl = ControlValues.ONE
+        return self._send_command(msg)
+
+    def _get_eio_level(self, address):
+        msg = Message()
+        msg.id = CommunicationProtocolIDs.SET_GET_EIO
+        msg.ctrl = ControlValues.ZERO
+        msg.params = bytearray([])
+        msg.params.extend(bytearray([address]))
+        return self._send_command(msg)
+
+    def _set_eio_level(self, address, level):
+        msg = Message()
+        msg.id = CommunicationProtocolIDs.SET_GET_EIO
+        msg.ctrl = ControlValues.ONE
+        msg.params = bytearray([])
+        msg.params.extend(bytearray([address]))
+        msg.params.extend(bytearray([level]))
+        return self._send_command(msg)
+    
+    def _set_stepper_motor_distance(self, index, isEnable, speed):
+        msg = Message()
+        msg.id = CommunicationProtocolIDs.SET_STEPPER_MOTOR_DISTANCE
+        msg.ctrl = ControlValues.ONE
+        msg.params = bytearray([])
+        msg.params.extend(bytearray(struct.pack('b', index)))
+        msg.params.extend(bytearray(struct.pack('b', isEnable)))
+        msg.params.extend(bytearray(struct.pack('i', speed)))
+        return self._send_command(msg)
+
+
+
+    def get_eio(self, addr):
+        return self._get_eio_level(addr)
+
+    def set_eio(self, addr, val):
+        return self._set_eio_level(addr, val)
 
     def close(self):
         self._on = False
@@ -280,7 +331,7 @@ class Dobot:
 
     def move_to(self, x, y, z, r, wait=False):
         self._set_ptp_cmd(x, y, z, r, mode=PTPMode.MOVL_XYZ, wait=wait)
-        
+
     def suck(self, enable):
         self._set_end_effector_suction_cup(enable)
 
@@ -290,6 +341,9 @@ class Dobot:
     def speed(self, velocity=100., acceleration=100.):
         self._set_ptp_common_params(velocity, acceleration)
         self._set_ptp_coordinate_params(velocity, acceleration)
+
+    def wait(self, ms):
+        self._set_wait_cmd(ms)
 
     def pose(self):
         response = self._get_pose()
@@ -303,8 +357,57 @@ class Dobot:
         j4 = struct.unpack_from('f', response.params, 28)[0]
         return x, y, z, r, j1, j2, j3, j4
 
-    def home(self):
-        self._set_home_cmd()
+    # def set_ir(self, enable=True, port=PORT_GP4):
+    #     msg = Message()
+    #     msg.id = 138
+    #     msg.ctrl = 0x02
+    #     msg.params = bytearray([])
+    #     msg.params.extend(bytearray([int(enable)]))
+    #     msg.params.extend(bytearray([port]))
+    #     return self._extract_cmd_index(self._send_command(msg))
+
+    # def get_ir(self, port=PORT_GP4):
+    #     msg = Message()
+    #     msg.id = 138
+    #     msg.ctrl = 0x00
+    #     msg.params = bytearray([])
+    #     msg.params.extend(bytearray([port]))
+    #     response = self._send_command(msg)
+    #     state = struct.unpack_from('?', response.params, 0)[0]
+    #     return state
+    
+    # def set_color(self, enable=True, port=PORT_GP2):
+    #     msg = Message()
+    #     msg.id = 137
+    #     msg.ctrl = 0x03
+    #     msg.params = bytearray([])
+    #     msg.params.extend(bytearray([int(enable)]))
+    #     msg.params.extend(bytearray([port]))
+    #     return self._extract_cmd_index(self._send_command(msg))
+
+    # def get_color(self, port=PORT_GP2):
+    #     msg = Message()
+    #     msg.id = 137
+    #     msg.ctrl = 0x00
+    #     msg.params = bytearray([])
+    #     msg.params.extend(bytearray([port]))
+    #     response = self._send_command(msg)
+    #     r = struct.unpack_from('?', response.params, 0)[0]
+    #     g = struct.unpack_from('?', response.params, 1)[0]
+    #     b = struct.unpack_from('?', response.params, 2)[0]
+    #     return [r, g, b]
+
+    def conveyor_belt_distance(self, speed):
+        if speed_mm_per_sec > 100:
+            print("Speed must be <= 100 mm/s")
+            return
+
+        MM_PER_REV = 34 * math.pi  # Seems to actually be closer to 36mm when measured but 34 works better
+        STEP_ANGLE_DEG = 1.8
+        STEPS_PER_REV = 360.0 / STEP_ANGLE_DEG * 10.0 * 16.0 / 2.0  # Spec sheet says that it can do 1.8deg increments, no idea what the 10 * 16 / 2 fudge factor is....
+        distance_steps = distance_mm / MM_PER_REV * STEPS_PER_REV
+        speed_steps_per_sec = speed_mm_per_sec / MM_PER_REV * STEPS_PER_REV * direction
+        self._set_stepper_motor_distance(0, 1, int(speed_steps_per_sec))
     
     def clear_alarms(self) -> None:
         msg = Message()
@@ -312,14 +415,5 @@ class Dobot:
         msg.ctrl = 0x01
         self._send_command(msg)  # empty response
 
-
-    def conveyor_belt_distance(self, speed_mm_per_sec, distance_mm, direction=1, interface=0):
-        if speed_mm_per_sec > 100:
-            raise pydobot.dobot.DobotException("Speed must be <= 100 mm/s")
-
-        MM_PER_REV = 34 * math.pi  # Seems to actually be closer to 36mm when measured but 34 works better
-        STEP_ANGLE_DEG = 1.8
-        STEPS_PER_REV = 360.0 / STEP_ANGLE_DEG * 10.0 * 16.0 / 2.0  # Spec sheet says that it can do 1.8deg increments, no idea what the 10 * 16 / 2 fudge factor is....
-        distance_steps = distance_mm / MM_PER_REV * STEPS_PER_REV
-        speed_steps_per_sec = speed_mm_per_sec / MM_PER_REV * STEPS_PER_REV * direction
-        return self._extract_cmd_index(self._set_stepper_motor_distance(int(speed_steps_per_sec), int(distance_steps), interface))
+    def home(self):
+        self._set_home_cmd()
