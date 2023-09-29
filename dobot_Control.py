@@ -2,6 +2,7 @@ from pydobot import Dobot
 from serial.tools import list_ports
 import time
 
+
 class dobotCommand():
     def __init__(self):
         available_ports = list_ports.comports()
@@ -26,4 +27,6 @@ class dobotCommand():
 
     def close(self):
         self.mydevice.close()
-        
+
+    def conveyer(self, speed, distance, direction):
+        self.mydevice.conveyor_belt_distance(speed, distance, direction)

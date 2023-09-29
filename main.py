@@ -7,5 +7,8 @@ if ( __name__ == "__main__"):
 
     robot.home()
     time.sleep(5)
-    robot.move()
+    robot.move(200, 0, 0, 0, True)
+    robot.move(200, 200, 0, 0, True)
+    robot.move(200, -200, 0, 0, True)
+    robot.conveyer(50, 100, 1)
     robot.close()
