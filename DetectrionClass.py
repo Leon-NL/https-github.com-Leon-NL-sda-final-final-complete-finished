@@ -210,4 +210,13 @@ class Detection():
         else:
             self.CreateThresholder()
             self.is_window_open = True
-            print ('open')
+
+    def MaskUpdate(self):
+        if self.is_window_open:
+            self.Getkeypoints
+            self.image2 = np.zeros((2 * self.height, 2 * self.width, 3), np.uint8)      
+            self.image2[:self.height, :self.width] = self.mask_red
+            self.image2[self.height, self.width:] = self.mask_green
+            self.image2[self.height:, self.width] = self.mask_blue
+            self.image2[self.height:, self.width:] = self.mask_yellow
+            cv2.imshow('Therhold Masks', self.image2)
