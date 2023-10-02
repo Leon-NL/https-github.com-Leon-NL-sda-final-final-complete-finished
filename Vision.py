@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 lower_red = 0, 0, 0
 upper_red = 255, 255, 255
@@ -157,11 +157,7 @@ while True:
 
     gettrackbarvalue()
 
-    # Initialize the output image with zeros (black background)
-    
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    
-    #87, 194, 220
     kernal = np.ones((3, 3), "uint8")
 
     mask_red = cv2.inRange(hsv, lower_red, upper_red)
@@ -223,7 +219,9 @@ while True:
 
     print (red_coordinates)
     cv2.imshow('image', image)
-    cv2.imshow('image2', image2)
+
+    if is_window_open == True:
+        cv2.imshow('image2', image2)
 
     
 
@@ -235,6 +233,7 @@ while True:
             cv2.destroyWindow('Thresholdsg')
             cv2.destroyWindow('Thresholdsb')
             cv2.destroyWindow('Thresholdsy')
+            cv2.destroyWindow('image2')
             is_window_open = False
             print ('close')
         else:
