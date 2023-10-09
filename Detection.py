@@ -145,7 +145,7 @@ class Detection():
             self.upper_yellow = np.array([self.yuh, self.yus, self.yuv])
 
     def GetKeypoints(self, cap):
-        self.GetTrackbarvalue
+        self.GetTrackbarvalue()
         self.ret, self.frame = cap.read()
         self.hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 
@@ -183,8 +183,8 @@ class Detection():
         self.TrackImage = cv2.drawKeypoints(im_with_keypoints , self.keypoints_yellow, np.array([]), (0, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         return self.TrackImage
     
-    def GetColorCords(self, color):
-        self.GetKeypoints
+    def GetColorCords(self, color, cap):
+        self.GetKeypoints(cap)
         self.red_coordinates = [(int(key.pt[0]), int(key.pt[1])) for key in self.keypoints_red]
         self.green_coordinates = [(int(key.pt[0]), int(key.pt[1])) for key in self.keypoints_green]
         self.blue_coordinates = [(int(key.pt[0]), int(key.pt[1])) for key in self.keypoints_blue]
@@ -209,8 +209,8 @@ class Detection():
         else:
             self.CreateThresholder()
             
-
     def MaskUpdate(self, cap):
+        
         if self.is_window_open:
             self.GetKeypoints(cap)
             self.width = int(cap.get(3))
