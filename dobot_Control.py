@@ -10,14 +10,14 @@ class dobotCommand():
         # if available_ports.__len__() == 0 or not str([x.device for x in available_ports]).__contains__('COM'):
         #     raise Exception('Ojee, geen Dobot gevonden! \r\nBeschiktbare poorten: {0}'.format([x.device for x in available_ports]))
         # port = available_ports[0].device
-        self.mydevice = Dobot(port="COM3", verbose=False)
+        self.mydevice = Dobot(port="COM9", verbose=False)
         self.mydevice.clear_alarms()
         
     def home(self,):
-        self.mydevice.speed(100, 100)
+        self.mydevice.speed(200, 200)
         # self.mydevice.clear_alarms()
         self.mydevice.home()
-
+        
     def setSpeed(self, speed: int):
         self.mydevice.speed(speed, speed)
 
@@ -28,5 +28,8 @@ class dobotCommand():
     def close(self):
         self.mydevice.close()
 
-    def conveyer(self, speed, distance, direction):
-        self.mydevice.conveyor_belt_distance(speed, distance, direction)
+    def conveyer(self, speed):
+        self.mydevice.conveyor_belt_distance(speed)
+
+    def suck(self, enable):
+        self.mydevice.suck(enable)
