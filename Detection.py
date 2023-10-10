@@ -147,6 +147,7 @@ class Detection():
     def GetKeypoints(self, cap):
         self.GetTrackbarvalue()
         self.ret, self.frame = cap.read()
+        self.frame = self.frame[115:395, 295:575]   
         self.hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 
         self.mask_red = cv2.inRange(self.hsv, self.lower_red, self.upper_red)
@@ -213,8 +214,8 @@ class Detection():
         
         if self.is_window_open:
             self.GetKeypoints(cap)
-            self.width = int(cap.get(3))
-            self.height = int(cap.get(4))
+            self.width = 280
+            self.height = 280
             self.image2 = np.zeros((2 * self.height, 2 * self.width, 3), np.uint8)      
             self.image2[:self.height, :self.width] = self.mask_red
             self.image2[:self.height, self.width:] = self.mask_green
