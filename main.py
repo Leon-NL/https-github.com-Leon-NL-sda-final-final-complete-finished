@@ -63,13 +63,17 @@ if ( __name__ == "__main__"):
                 process = state.PICK_UP
 
             case state.PICK_UP:
-                # robot.move(ZeroPos[0], (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 0, 0, True)
-                robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 0, 0, True)
-                robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), -35, 0, True)
-                robot.suck(True)
-                robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 35, 0, True)
-                # robot.move(ZeroPos[0] + (80), ZeroPos[1] - (0), 0, 0, True)
-                process = state.DROP
+                try:
+                    # robot.move(ZeroPos[0], (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 0, 0, True)
+                    robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 0, 0, True)
+                    robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), -35, 0, True)
+                    robot.suck(True)
+                    robot.move((ZeroPos[0] + ((280.0 - float(pos[0][1])) / PixelsPerMM_X)), (ZeroPos[1] - (float(pos[0][0])/PixelsPerMM_Y)), 35, 0, True)
+                    # robot.move(ZeroPos[0] + (80), ZeroPos[1] - (0), 0, 0, True)
+                    process = state.DROP
+                except:
+                    print("Nothing detected")
+                    process = state.LOCALISATION
         
             case state.DROP:
                 robot.move(100, -200, 20, 0, True)
